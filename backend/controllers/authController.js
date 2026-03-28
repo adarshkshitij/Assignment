@@ -30,7 +30,7 @@ exports.register = async (req, res, next) => {
       });
     }
 
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -40,11 +40,6 @@ exports.register = async (req, res, next) => {
 exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-
-    // Validate email & password
-    if (!email || !password) {
-      return res.status(400).json({ success: false, error: 'Please provide an email and password' });
-    }
 
     // Check for user
     const user = await User.findOne({ email }).select('+password');
@@ -62,7 +57,7 @@ exports.login = async (req, res, next) => {
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -77,7 +72,7 @@ exports.getMe = async (req, res, next) => {
       data: user
     });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 

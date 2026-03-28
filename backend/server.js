@@ -7,6 +7,7 @@ const path = require('path');
 const connectDB = require('./config/db');
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
+const errorHandler = require('./middleware/error');
 
 // Load env vars
 dotenv.config();
@@ -74,6 +75,7 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 // Mount routers
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/tasks', tasks);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

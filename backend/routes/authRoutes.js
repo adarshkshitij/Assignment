@@ -1,4 +1,10 @@
 const express = require('express');
+const { authorize, protect } = require('../middleware/auth');
+const handleValidation = require('../middleware/validate');
+const {
+  registerValidation,
+  loginValidation
+} = require('../middleware/validators');
 const {
   register,
   login,
@@ -6,8 +12,6 @@ const {
 } = require('../controllers/authController');
 
 const router = express.Router();
-
-const { protect } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -49,7 +53,7 @@ const { protect } = require('../middleware/auth');
  *       400:
  *         description: Validation error
  */
-router.post('/register', register);
+router.post('/register', registerValidation, handleValidation, register);
 
 /**
  * @swagger
@@ -80,7 +84,7 @@ router.post('/register', register);
  *       401:
  *         description: Invalid credentials
  */
-router.post('/login', login);
+router.post('/login', loginValidation, handleValidation, login);
 
 /**
  * @swagger
@@ -98,5 +102,31 @@ router.post('/login', login);
  *         description: Not authorized
  */
 router.get('/me', protect, getMe);
+
+/**
+ * @swagger
+ * /api/v1/auth/admin-check:
+ *   get:
+ *     summary: Verify that the current user has admin access
+ *     tags:
+ *       - Auth
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Admin access confirmed
+ *       403:
+ *         description: User is not an admin
+ */
+router.get('/admin-check', protect, authorize('admin'), (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Admin access confirmed',
+    data: {
+      id: req.user.id,
+      role: req.user.role
+    }
+  });
+});
 
 module.exports = router;

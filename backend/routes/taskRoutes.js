@@ -1,4 +1,12 @@
 const express = require('express');
+const { authorize, protect } = require('../middleware/auth');
+const handleValidation = require('../middleware/validate');
+const {
+  createTaskValidation,
+  updateTaskValidation,
+  taskIdValidation,
+  taskQueryValidation
+} = require('../middleware/validators');
 const {
   getTasks,
   getTask,
@@ -9,8 +17,6 @@ const {
 } = require('../controllers/taskController');
 
 const router = express.Router();
-
-const { protect } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -25,7 +31,7 @@ const { protect } = require('../middleware/auth');
  *       200:
  *         description: Task statistics retrieved successfully
  */
-router.route('/stats').get(protect, getTaskStats);
+router.route('/stats').get(protect, authorize('admin'), getTaskStats);
 
 /**
  * @swagger
@@ -97,8 +103,8 @@ router.route('/stats').get(protect, getTaskStats);
  *         description: Task created successfully
  */
 router.route('/')
-  .get(protect, getTasks)
-  .post(protect, createTask);
+  .get(protect, taskQueryValidation, handleValidation, getTasks)
+  .post(protect, createTaskValidation, handleValidation, createTask);
 
 /**
  * @swagger
@@ -177,8 +183,8 @@ router.route('/')
  *         description: Task deleted successfully
  */
 router.route('/:id')
-  .get(protect, getTask)
-  .put(protect, updateTask)
-  .delete(protect, deleteTask);
+  .get(protect, taskIdValidation, handleValidation, getTask)
+  .put(protect, updateTaskValidation, handleValidation, updateTask)
+  .delete(protect, taskIdValidation, handleValidation, deleteTask);
 
 module.exports = router;

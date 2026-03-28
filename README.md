@@ -10,6 +10,7 @@ It implements a robust Express.js REST API with a dynamic React frontend.
 - **Analytics Engine**: Real-time task metrics using MongoDB Aggregation pipelines.
 - **High Performance**: In-memory API response caching (node-cache) for zero-latency data fetching.
 - **Authentication**: JWT and `bcrypt` security with Role-Based Access (Admin/User).
+- **Validation & Errors**: Request validation with `express-validator` and centralized API error handling.
 - **Premium Frontend**: "Neon Dark Mode Trading Terminal" with Liquid Glassmorphism and animated backgrounds.
 - **Mobile Responsive**: Fully optimized UI for tablet and mobile viewports.
 - **Theme Engine**: Persistent Light/Dark mode switching.
@@ -103,6 +104,10 @@ Swagger API docs are available at:
 
 `http://localhost:5000/api-docs`
 
+Postman collection is available at:
+
+`backend/Primetrade-API.postman_collection.json`
+
 ### 7. Start the frontend
 
 Open a second terminal and run:
@@ -152,6 +157,13 @@ To create an admin account:
 
 If the code does not match, admin registration will be rejected.
 
+## Role-Based Access
+
+- Regular `user` accounts can only access and manage their own tasks
+- `admin` accounts can view all tasks and use admin-only endpoints like:
+  - `GET /api/v1/auth/admin-check`
+  - `GET /api/v1/tasks/stats`
+
 ## Notes
 
 - The frontend connects to the backend at `http://localhost:5000/api/v1`
@@ -164,4 +176,6 @@ If the code does not match, admin registration will be rejected.
 - [x] Working APIs for Auth and CRUD
 - [x] Basic frontend UI that connects to APIs
 - [x] API documentation (Swagger generated dynamically)
+- [x] Postman collection for API testing
+- [x] Request validation and centralized error handling
 - [x] Short scalability note (`SCALABILITY.md`)

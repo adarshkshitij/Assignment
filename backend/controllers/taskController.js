@@ -20,7 +20,10 @@ exports.getTasks = async (req, res, next) => {
 
     let query;
     const reqQuery = { ...req.query };
-    const removeFields = ['sort'];
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const removeFields = ['sort', 'page', 'limit'];
     removeFields.forEach(param => delete reqQuery[param]);
 
     // Role check
@@ -38,23 +41,32 @@ exports.getTasks = async (req, res, next) => {
       query = query.sort('-createdAt'); // Default sort newest
     }
 
+    query = query.skip(skip).limit(limit);
+
     // Populate for admin
     if (req.user.role === 'admin') {
       query = query.populate('user', 'name email');
     }
 
+    const total = await Task.countDocuments(reqQuery);
     const tasks = await query;
 
     const response = {
       success: true,
       count: tasks.length,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
       data: tasks
     };
 
     cache.set(cacheKey, response);
     res.status(200).json(response);
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -72,7 +84,7 @@ exports.getTask = async (req, res, next) => {
 
     res.status(200).json({ success: true, data: task });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -86,7 +98,7 @@ exports.createTask = async (req, res, next) => {
     clearUserCache(req.user.id, req.user.role);
     res.status(201).json({ success: true, data: task });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -106,7 +118,7 @@ exports.updateTask = async (req, res, next) => {
     clearUserCache(req.user.id, req.user.role);
     res.status(200).json({ success: true, data: task });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -126,7 +138,7 @@ exports.deleteTask = async (req, res, next) => {
     clearUserCache(req.user.id, req.user.role);
     res.status(200).json({ success: true, data: {} });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
 
@@ -149,6 +161,6 @@ exports.getTaskStats = async (req, res, next) => {
 
     res.status(200).json({ success: true, data: stats });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    next(err);
   }
 };
