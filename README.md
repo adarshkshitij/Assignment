@@ -15,56 +15,45 @@ It implements a robust Express.js REST API with a dynamic React frontend.
 - **Theme Engine**: Persistent Light/Dark mode switching.
 - **Security**: Implementation of `helmet`, `cors`, and password visibility toggles.
 
-## Prerequisites
+## Beginner-Friendly Setup
 
-- Node.js (v16+)
-- MongoDB (running locally via Docker or externally, like Atlas)
+If you are starting from zero and do not have anything installed, follow these steps in order.
 
-## Getting Started
+### 1. Install required software
 
-### 1. Database Setup
-The easiest way to run the database is via Docker:
+You need these tools on your computer:
 
-```bash
-docker-compose up -d
-```
+- **Git**: https://git-scm.com/downloads
+- **Node.js** (version 16 or later): https://nodejs.org/
+- **MongoDB Community Server**: https://www.mongodb.com/try/download/community
 
-Alternatively, you can skip this if you update `backend/.env` with your own `MONGO_URI`.
+Optional:
 
-### 2. Start Backend
+- **Docker Desktop** if you want to run MongoDB with Docker instead of installing MongoDB directly:
+  https://www.docker.com/products/docker-desktop/
+- **VS Code** for editing and running the project:
+  https://code.visualstudio.com/
 
-```bash
-cd backend
-npm install
-npm run dev
-```
+### 2. Check that everything is installed
 
-Runs on `http://localhost:5000`
-
-Swagger API Docs are available at `http://localhost:5000/api-docs`
-
-### 3. Start Frontend
+Open Command Prompt, PowerShell, or the VS Code terminal and run:
 
 ```bash
-cd frontend
-npm install
-npm run dev
+git --version
+node -v
+npm -v
 ```
 
-Runs on `http://localhost:5173`
+If these commands show version numbers, the tools are installed correctly.
 
-## Local Setup From GitHub
-
-If someone clones this repository from GitHub, they can run it with these steps.
-
-### 1. Clone the repository
+### 3. Download the project from GitHub
 
 ```bash
 git clone https://github.com/adarshkshitij/Assignment.git
 cd Assignment
 ```
 
-### 2. Create backend environment variables
+### 4. Set up the backend environment file
 
 Create a file named `backend/.env` and add:
 
@@ -75,7 +64,30 @@ JWT_SECRET=your_jwt_secret_here
 ADMIN_SECRET_CODE=your_admin_code_here
 ```
 
-### 3. Start the backend
+You can replace:
+
+- `your_jwt_secret_here` with any long random secret string
+- `your_admin_code_here` with any secret code you want to use for admin signup
+
+### 5. Start MongoDB
+
+Choose one of these options:
+
+#### Option A: If MongoDB is installed locally
+
+Make sure the MongoDB service is running on your machine.
+
+#### Option B: If you want to use Docker
+
+From the project root, run:
+
+```bash
+docker-compose up -d
+```
+
+### 6. Start the backend
+
+Open a terminal in the project folder and run:
 
 ```bash
 cd backend
@@ -83,11 +95,15 @@ npm install
 npm run dev
 ```
 
-The backend runs on `http://localhost:5000`
+The backend runs on:
 
-Swagger docs are available at `http://localhost:5000/api-docs`
+`http://localhost:5000`
 
-### 4. Start the frontend
+Swagger API docs are available at:
+
+`http://localhost:5000/api-docs`
+
+### 7. Start the frontend
 
 Open a second terminal and run:
 
@@ -97,9 +113,37 @@ npm install
 npm run dev
 ```
 
-The frontend runs on `http://localhost:5173`
+The frontend runs on:
 
-### 5. Registering as an admin
+`http://localhost:5173`
+
+### 8. Open the app
+
+Open this URL in your browser:
+
+`http://localhost:5173`
+
+## Quick Run Guide
+
+If your system is already ready, use these commands:
+
+### Backend
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+## Admin Signup
 
 To create an admin account:
 
@@ -107,6 +151,12 @@ To create an admin account:
 - Enter the same value used in `ADMIN_SECRET_CODE`
 
 If the code does not match, admin registration will be rejected.
+
+## Notes
+
+- The frontend connects to the backend at `http://localhost:5000/api/v1`
+- The default frontend development URL is `http://localhost:5173`
+- If local MongoDB is not available, the backend may fall back to an in-memory MongoDB instance depending on your environment
 
 ## Deliverables Check
 
