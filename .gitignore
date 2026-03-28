@@ -1,0 +1,13 @@
+node_modules
+.env
+dist
+build
+.DS_Store
+*.log
+log.txt
+swagger-debug.json
+test-swagger.json
+out.txt
+out2.txt
+/backend/node_modules
+/frontend/node_modules
