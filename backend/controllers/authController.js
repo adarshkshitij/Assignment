@@ -23,6 +23,13 @@ exports.register = async (req, res, next) => {
 
     sendTokenResponse(user, 201, res);
   } catch (err) {
+    if (err.code === 11000 && err.keyPattern?.email) {
+      return res.status(400).json({
+        success: false,
+        error: 'An account with this email already exists. Please sign in instead.'
+      });
+    }
+
     res.status(400).json({ success: false, error: err.message });
   }
 };
