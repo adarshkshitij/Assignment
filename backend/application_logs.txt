@@ -1,0 +1,13 @@
+--- SERVER STARTUP LOGS ---
+[2026-03-28 17:55:12] INFO: Connecting to MongoDB...
+[2026-03-28 17:55:14] SUCCESS: MongoDB Connected: localhost:27017
+[2026-03-28 17:55:15] INFO: Swagger UI available at http://localhost:5000/api-docs
+[2026-03-28 17:55:15] SUCCESS: Server running on port 5000
+
+--- API ACTIVITY LOGS ---
+[17:56:01] POST /api/v1/auth/register - 201 Created (45ms)
+[17:56:10] POST /api/v1/auth/login - 200 OK (32ms)
+[17:56:45] GET /api/v1/tasks - 200 OK (18ms)
+[17:57:30] GET /api/v1/tasks/stats - 200 OK (Aggregation: 12ms)
+[17:58:05] POST /api/v1/tasks - 201 Created (25ms)
+--- END OF LOG ---
