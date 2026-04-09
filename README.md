@@ -118,6 +118,15 @@ sequenceDiagram
 
 - Swagger UI: `http://localhost:5000/api-docs`
 - Postman collection: `backend/Primetrade-API.postman_collection.json`
+- Architecture notes: `ARCHITECTURE.md`
+- Reviewer quick path: `REVIEWER_GUIDE.md`
+
+## Demo and Access Links
+
+- Local frontend: `http://127.0.0.1:5173`
+- Local Swagger docs: `http://localhost:5000/api-docs`
+- Local health check: `http://localhost:5000/api/v1/health`
+- Hosted demo: not deployed as part of this assignment repository
 
 ## Environment Configuration
 
@@ -213,6 +222,16 @@ The frontend typically runs at:
 - Swagger docs: `http://localhost:5000/api-docs`
 - Health check: `http://localhost:5000/api/v1/health`
 
+## Reviewer Flow
+
+If you are reviewing the project for the first time, the fastest path is:
+
+1. Read this README for scope and tradeoffs
+2. Open Swagger docs to inspect the API surface
+3. Run the frontend and verify auth + task flows
+4. Read `ARCHITECTURE.md` for system design details
+5. Use `REVIEWER_GUIDE.md` for a focused evaluation path
+
 ## Admin Signup
 
 To create an admin account:
@@ -235,6 +254,14 @@ If the code does not match, admin registration is rejected.
 Note:
 For a production deployment, `httpOnly` secure cookies would generally be preferable to browser-managed storage for token handling.
 
+## Validation and Error Handling Strategy
+
+- request validation runs before controller execution through reusable validator middleware
+- model-level validation still exists at the schema layer as a second line of defense
+- controller logic focuses on domain actions and authorization checks
+- centralized error middleware converts runtime failures into consistent JSON responses
+- unmatched routes are handled by a dedicated `notFound` middleware
+
 ## Scalability Considerations
 
 The codebase was designed with incremental scalability in mind:
@@ -247,7 +274,8 @@ The codebase was designed with incremental scalability in mind:
 - caching support already included for task queries
 - Docker-based database setup support
 
-See [SCALABILITY.md](/c:/Users/ADARSH/Desktop/Learning/Internship/Primetrade%20ai/SCALABILITY.md) for a short note on future scaling directions such as microservices, distributed caching, and load balancing.
+See [SCALABILITY.md](./SCALABILITY.md) for a short note on future scaling directions such as microservices, distributed caching, and load balancing.
+See `ARCHITECTURE.md` for implementation-level structure and request flow.
 
 ## Tradeoffs and Practical Decisions
 
@@ -272,3 +300,9 @@ See [SCALABILITY.md](/c:/Users/ADARSH/Desktop/Learning/Internship/Primetrade%20a
 - Basic frontend UI that connects to APIs: complete
 - API documentation (Swagger/Postman collection): complete
 - Short scalability note: complete
+
+## Supporting Documents
+
+- `ARCHITECTURE.md`
+- `REVIEWER_GUIDE.md`
+- `SCALABILITY.md`
