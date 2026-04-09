@@ -8,6 +8,7 @@ const connectDB = require('./config/db');
 const swaggerUI = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const errorHandler = require('./middleware/error');
+const notFound = require('./middleware/notFound');
 
 // Load env vars
 dotenv.config();
@@ -18,6 +19,7 @@ connectDB();
 // Route files
 const auth = require('./routes/authRoutes');
 const tasks = require('./routes/taskRoutes');
+const health = require('./routes/healthRoutes');
 
 const app = express();
 
@@ -66,6 +68,7 @@ const swaggerOptions = {
   apis: [
     path.resolve(__dirname, './routes/authRoutes.js'),
     path.resolve(__dirname, './routes/taskRoutes.js'),
+    path.resolve(__dirname, './routes/healthRoutes.js'),
   ],
 };
 
@@ -75,6 +78,8 @@ app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 // Mount routers
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/tasks', tasks);
+app.use('/api/v1/health', health);
+app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;

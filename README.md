@@ -1,181 +1,274 @@
-# Primetrade AI Backend Developer (Intern) Assignment
+# Primetrade Assignment: Secure Task Management Platform
 
-This repository contains the completion of the Backend Developer (Intern) assignment.
-It implements a robust Express.js REST API with a dynamic React frontend.
+This project is a production-oriented full-stack assignment built around a secure REST API and a lightweight frontend for API consumption. The backend is the primary focus and emphasizes modular design, authentication, role-based authorization, validation, documentation, and operational resilience. The frontend exists to demonstrate real user flows against the API, including authentication, protected access, and CRUD interactions.
 
-## Features
+## Overview
 
-- **Backend Architecture**: Scalable MVC Express app with MongoDB.
-- **Advanced Querying**: Server-side filtering, multi-field sorting, and pagination.
-- **Analytics Engine**: Real-time task metrics using MongoDB Aggregation pipelines.
-- **High Performance**: In-memory API response caching (node-cache) for zero-latency data fetching.
-- **Authentication**: JWT and `bcrypt` security with Role-Based Access (Admin/User).
-- **Validation & Errors**: Request validation with `express-validator` and centralized API error handling.
-- **Premium Frontend**: "Neon Dark Mode Trading Terminal" with Liquid Glassmorphism and animated backgrounds.
-- **Mobile Responsive**: Fully optimized UI for tablet and mobile viewports.
-- **Theme Engine**: Persistent Light/Dark mode switching.
-- **Security**: Implementation of `helmet`, `cors`, and password visibility toggles.
+The application supports:
 
-## Beginner-Friendly Setup
+- user registration and login with password hashing
+- JWT-based authentication
+- role-based access control for `user` and `admin`
+- CRUD operations for a secondary entity: `tasks`
+- filtering, sorting, and pagination for task listing
+- request validation and centralized error handling
+- Swagger and Postman API documentation
+- React frontend for register, login, protected dashboard access, and task CRUD
+- fallback in-memory MongoDB support for development and demo resilience
 
-If you are starting from zero and do not have anything installed, follow these steps in order.
+## Architecture
 
-### 1. Install required software
+The backend follows a modular Express + Mongoose structure:
 
-You need these tools on your computer:
-
-- **Git**: https://git-scm.com/downloads
-- **Node.js** (version 16 or later): https://nodejs.org/
-- **MongoDB Community Server**: https://www.mongodb.com/try/download/community
-
-Optional:
-
-- **Docker Desktop** if you want to run MongoDB with Docker instead of installing MongoDB directly:
-  https://www.docker.com/products/docker-desktop/
-- **VS Code** for editing and running the project:
-  https://code.visualstudio.com/
-
-### 2. Check that everything is installed
-
-Open Command Prompt, PowerShell, or the VS Code terminal and run:
-
-```bash
-git --version
-node -v
-npm -v
+```text
+backend/
+  config/         database connection
+  controllers/    request handlers
+  middleware/     auth, validation, error, notFound
+  models/         Mongoose schemas
+  routes/         feature routes
 ```
 
-If these commands show version numbers, the tools are installed correctly.
+The frontend is organized for separation of concerns:
 
-### 3. Download the project from GitHub
-
-```bash
-git clone https://github.com/adarshkshitij/Assignment.git
-cd Assignment
+```text
+frontend/
+  src/
+    context/      authentication state management
+    lib/          shared API client
+    pages/        route-level pages
+    utils/        sanitization and API error helpers
 ```
 
-### 4. Set up the backend environment file
+### System Flow
 
-Create a file named `backend/.env` and add:
+```mermaid
+flowchart LR
+    U[User] --> F[React Frontend]
+    F --> A[Axios API Client]
+    A --> B[Express API /api/v1]
+    B --> M[Auth + Validation Middleware]
+    M --> C[Controllers]
+    C --> D[(MongoDB / In-Memory Fallback)]
+    B --> S[Swagger /api-docs]
+```
+
+### Request Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant API
+    participant Middleware
+    participant Controller
+    participant DB
+
+    User->>Frontend: Register / Login / Task Action
+    Frontend->>API: HTTP request with payload
+    API->>Middleware: auth + validation + role checks
+    Middleware->>Controller: sanitized request
+    Controller->>DB: query / create / update / delete
+    DB-->>Controller: result
+    Controller-->>Frontend: JSON response
+    Frontend-->>User: success / error feedback
+```
+
+## Key Features
+
+### Backend
+
+- Modular Express API with versioned routes under `/api/v1`
+- JWT authentication with `bcryptjs` password hashing
+- Role-based authorization for `user` and `admin`
+- Task CRUD with ownership checks
+- Filtering, sorting, pagination, and admin statistics
+- Centralized validation using `express-validator`
+- Centralized error handling and 404 route handling
+- Health check endpoint at `/api/v1/health`
+- Swagger docs at `/api-docs`
+- Postman collection included in the repository
+
+### Frontend
+
+- React + Vite single-page application
+- Register and login flows
+- Protected dashboard route
+- Task create, edit, delete, and list UI
+- Success and error messaging driven by API responses
+- Shared API client with centralized JWT attachment
+- Environment-based API URL configuration using `VITE_API_URL`
+
+## Authentication and Authorization
+
+### Authentication
+
+- Passwords are hashed before persistence using `bcryptjs`
+- JWT tokens are returned on successful login and registration
+- Protected routes require a valid bearer token
+
+### Authorization
+
+- `user` accounts can access and manage only their own tasks
+- `admin` accounts can inspect all tasks and use admin-only endpoints such as:
+  - `GET /api/v1/auth/admin-check`
+  - `GET /api/v1/tasks/stats`
+
+## API Documentation
+
+- Swagger UI: `http://localhost:5000/api-docs`
+- Postman collection: `backend/Primetrade-API.postman_collection.json`
+
+## Environment Configuration
+
+### Backend
+
+Create `backend/.env` from `backend/.env.example`:
 
 ```env
 PORT=5000
+NODE_ENV=development
 MONGO_URI=mongodb://localhost:27017/primetrade_tasks
-JWT_SECRET=your_jwt_secret_here
-ADMIN_SECRET_CODE=your_admin_code_here
+JWT_SECRET=replace_with_a_long_random_secret
+ADMIN_SECRET_CODE=replace_with_admin_signup_code
 ```
 
-You can replace:
+### Frontend
 
-- `your_jwt_secret_here` with any long random secret string
-- `your_admin_code_here` with any secret code you want to use for admin signup
+Create `frontend/.env` from `frontend/.env.example` if you want to override the default API URL:
 
-### 5. Start MongoDB
+```env
+VITE_API_URL=http://localhost:5000/api/v1
+```
 
-Choose one of these options:
+## Running the Project
 
-#### Option A: If MongoDB is installed locally
+## 1. Install dependencies
 
-Make sure the MongoDB service is running on your machine.
+Backend:
 
-#### Option B: If you want to use Docker
+```bash
+cd backend
+npm install
+```
 
-From the project root, run:
+Frontend:
+
+```bash
+cd frontend
+npm install
+```
+
+## 2. Start the database
+
+### Option A: Local MongoDB
+
+Run MongoDB locally so that `MONGO_URI=mongodb://localhost:27017/primetrade_tasks` is reachable.
+
+### Option B: Docker
+
+If Docker Desktop is installed, run from the project root:
 
 ```bash
 docker-compose up -d
 ```
 
-### 6. Start the backend
-
-Open a terminal in the project folder and run:
+## 3. Start the backend
 
 ```bash
 cd backend
-npm install
 npm run dev
 ```
 
-The backend runs on:
+Expected successful startup:
 
-`http://localhost:5000`
+```text
+MongoDB Connected: localhost
+Server running in development mode on port 5000
+```
 
-Swagger API docs are available at:
+If MongoDB is unavailable, the backend will fall back to an in-memory MongoDB instance:
 
-`http://localhost:5000/api-docs`
+```text
+Failed to connect to primary MongoDB. Spinning up In-Memory DB...
+In-Memory MongoDB Connected: 127.0.0.1
+```
 
-Postman collection is available at:
+This fallback is useful for local demos, but it is temporary and non-persistent.
 
-`backend/Primetrade-API.postman_collection.json`
-
-### 7. Start the frontend
-
-Open a second terminal and run:
+## 4. Start the frontend
 
 ```bash
 cd frontend
-npm install
 npm run dev
 ```
 
-The frontend runs on:
+The frontend typically runs at:
 
-`http://localhost:5173`
+`http://127.0.0.1:5173`
 
-### 8. Open the app
+## 5. Use the application
 
-Open this URL in your browser:
-
-`http://localhost:5173`
-
-## Quick Run Guide
-
-If your system is already ready, use these commands:
-
-### Backend
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+- App UI: `http://127.0.0.1:5173`
+- Swagger docs: `http://localhost:5000/api-docs`
+- Health check: `http://localhost:5000/api/v1/health`
 
 ## Admin Signup
 
 To create an admin account:
 
-- Select `Admin` in the signup form
-- Enter the same value used in `ADMIN_SECRET_CODE`
+- choose `Admin` during registration
+- provide the same value configured in `ADMIN_SECRET_CODE`
 
-If the code does not match, admin registration will be rejected.
+If the code does not match, admin registration is rejected.
 
-## Role-Based Access
+## Security Considerations
 
-- Regular `user` accounts can only access and manage their own tasks
-- `admin` accounts can view all tasks and use admin-only endpoints like:
-  - `GET /api/v1/auth/admin-check`
-  - `GET /api/v1/tasks/stats`
+- Password hashing with `bcryptjs`
+- JWT-protected routes for authenticated access
+- Role-based route protection and resource ownership checks
+- Request validation using `express-validator`
+- Centralized API error responses
+- Helmet-based security headers
+- Session storage token handling on the frontend for a simpler demo flow
 
-## Notes
+Note:
+For a production deployment, `httpOnly` secure cookies would generally be preferable to browser-managed storage for token handling.
 
-- The frontend connects to the backend at `http://localhost:5000/api/v1`
-- The default frontend development URL is `http://localhost:5173`
-- If local MongoDB is not available, the backend may fall back to an in-memory MongoDB instance depending on your environment
+## Scalability Considerations
 
-## Deliverables Check
+The codebase was designed with incremental scalability in mind:
 
-- [x] Backend project hosted in GitHub with README setup
-- [x] Working APIs for Auth and CRUD
-- [x] Basic frontend UI that connects to APIs
-- [x] API documentation (Swagger generated dynamically)
-- [x] Postman collection for API testing
-- [x] Request validation and centralized error handling
-- [x] Short scalability note (`SCALABILITY.md`)
+- versioned API routes
+- modular route/controller/middleware separation
+- reusable validation middleware
+- environment-based configuration
+- API documentation for easier onboarding
+- caching support already included for task queries
+- Docker-based database setup support
+
+See [SCALABILITY.md](/c:/Users/ADARSH/Desktop/Learning/Internship/Primetrade%20ai/SCALABILITY.md) for a short note on future scaling directions such as microservices, distributed caching, and load balancing.
+
+## Tradeoffs and Practical Decisions
+
+- MongoDB in-memory fallback was included to improve local reliability and demo readiness
+- The frontend intentionally remains simple because the assignment prioritizes backend design
+- The code aims for clarity and maintainability over unnecessary abstraction
+
+## Suggested Future Improvements
+
+- refresh token flow with rotation
+- `httpOnly` cookie-based auth
+- automated backend and frontend tests
+- Redis-backed distributed caching
+- request correlation IDs and structured logs
+- CI/CD pipeline and deployment configuration
+- persistent production database and secrets management
+
+## Deliverables Mapping
+
+- Backend project hosted in GitHub with README setup: complete
+- Working APIs for authentication and CRUD: complete
+- Basic frontend UI that connects to APIs: complete
+- API documentation (Swagger/Postman collection): complete
+- Short scalability note: complete
