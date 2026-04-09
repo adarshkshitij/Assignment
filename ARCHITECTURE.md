@@ -1,75 +1,70 @@
 # Architecture Guide
 
-This document explains how the project is structured, how requests move through the system, and which design decisions were chosen intentionally for maintainability and reviewer clarity.
+This document explains how the system is organized, how requests move through it, and which design choices were made intentionally for clarity, maintainability, and reviewer readability.
 
-## Architectural Intent
+## Architectural Positioning
 
-The assignment is built as a modular monolith. That means:
+The project is implemented as a **modular monolith**:
 
-- a single deployable backend service
-- clearly separated routes, controllers, middleware, and models
-- production-style concerns handled inside the monolith
-- easy future evolution into service boundaries if needed
+- one backend service
+- clear separation of routing, middleware, controllers, and models
+- enough structure to show production-style engineering decisions
+- simple local setup without unnecessary distributed complexity
 
-This is a practical choice for an assignment because it keeps the system simple to run while still demonstrating sound backend engineering practices.
+This is the right fit for the problem size and for an assignment-oriented repository that still aims to demonstrate maturity.
 
-## High-Level System Diagram
+## System Overview
 
 ```mermaid
 flowchart TD
     User[User / Reviewer] --> Frontend[React Frontend]
     Frontend --> ApiClient[Shared Axios Client]
     ApiClient --> Backend[Express API]
-    Backend --> Middleware[Auth / Validation / Error Middleware]
-    Middleware --> Controllers[Controllers]
+    Backend --> Auth[Auth Middleware]
+    Backend --> Validation[Validation Middleware]
+    Backend --> Controllers[Controllers]
     Controllers --> Models[Mongoose Models]
+    Controllers --> Cache[NodeCache]
     Models --> Database[(MongoDB)]
     Backend --> Swagger[Swagger Docs]
+    Backend --> Health[Health Endpoint]
 ```
 
 ## Backend Responsibility Map
 
 ```mermaid
 flowchart LR
-    Routes --> Middleware
-    Middleware --> Controllers
+    Routes --> Validation
+    Routes --> Auth
+    Validation --> Controllers
+    Auth --> Controllers
     Controllers --> Models
-    Controllers --> Cache[In-Memory Cache]
-    Models --> Mongo[(MongoDB or In-Memory Fallback)]
+    Controllers --> Cache
+    Models --> Database
 ```
 
-### Routes
+## Folder-Level Responsibilities
 
-Routes define public API surface area and attach middleware chains.
+### Backend
 
-- `authRoutes.js`: registration, login, current user, admin access check
-- `taskRoutes.js`: task CRUD and stats
-- `healthRoutes.js`: health endpoint for basic operational visibility
+| Path | Responsibility |
+| --- | --- |
+| `backend/server.js` | application bootstrap, middleware registration, route mounting |
+| `backend/config/db.js` | database connection with fallback behavior |
+| `backend/routes` | HTTP surface and route composition |
+| `backend/controllers` | request orchestration and domain actions |
+| `backend/middleware` | auth, validation, and error handling policies |
+| `backend/models` | schema definitions and persistence constraints |
 
-### Middleware
+### Frontend
 
-Middleware is used as a reusable policy layer.
-
-- `auth.js`: JWT verification and role authorization
-- `validate.js`: validation result handling
-- `validators.js`: request validation rules
-- `error.js`: centralized error responses
-- `notFound.js`: unmatched route handling
-
-### Controllers
-
-Controllers coordinate request handling and domain behavior.
-
-- `authController.js`: register, login, current user
-- `taskController.js`: task CRUD, stats, filtering, pagination, caching
-- `healthController.js`: health response
-
-### Models
-
-Models describe persistence structure and database-level validation.
-
-- `User.js`
-- `Task.js`
+| Path | Responsibility |
+| --- | --- |
+| `frontend/src/App.jsx` | route composition |
+| `frontend/src/context/AuthContext.jsx` | auth state and auth actions |
+| `frontend/src/lib/api.js` | Axios instance and token injection |
+| `frontend/src/pages` | route-level screens |
+| `frontend/src/utils/form.js` | input sanitization and API error extraction |
 
 ## Request Lifecycle
 
@@ -83,30 +78,35 @@ sequenceDiagram
     participant DB
 
     Client->>Route: HTTP request
-    Route->>Middleware: auth / validation / role checks
-    Middleware->>Controller: validated request
-    Controller->>Model: domain query
+    Route->>Middleware: validation and auth checks
+    Middleware->>Controller: trusted request payload
+    Controller->>Model: query or mutation
     Model->>DB: persistence operation
     DB-->>Model: result
-    Model-->>Controller: hydrated response
+    Model-->>Controller: hydrated record(s)
     Controller-->>Client: JSON response
 ```
 
-## Role-Based Access Model
+## Auth and Access Model
 
 ```mermaid
 flowchart TD
-    Login[Authenticated User] --> Role{Role}
-    Role -->|user| UserAccess[Own profile + own tasks]
-    Role -->|admin| AdminAccess[All tasks + stats + admin check]
+    Visitor[Visitor] --> Register[Register]
+    Visitor --> Login[Login]
+    Login --> Authenticated[Authenticated User]
+    Register --> Authenticated
+    Authenticated --> Role{Role}
+    Role -->|user| UserScope[Own tasks only]
+    Role -->|admin| AdminScope[All tasks + stats]
 ```
 
-### Effective Rules
+### Effective authorization rules
 
-- all authenticated users can create and manage their own tasks
-- only admins can access task statistics
-- only admins can pass the explicit admin check route
-- task ownership is enforced at controller level for read/update/delete
+- all authenticated users can create tasks
+- standard users can only read, update, and delete their own tasks
+- admins can access all tasks
+- admins can access aggregated task statistics
+- admin registration requires a configured secret code
 
 ## Data Model
 
@@ -120,6 +120,7 @@ erDiagram
       string email
       string password
       string role
+      date createdAt
     }
 
     TASK {
@@ -129,47 +130,63 @@ erDiagram
       string status
       string priority
       string user
+      date createdAt
+      date updatedAt
     }
 ```
 
-## Frontend Structure
+## Runtime Concerns
 
-The frontend intentionally stays lightweight because the assignment prioritizes backend implementation. Even so, it follows clear separation of concerns:
+### Validation
 
-- `pages/`: route-level screens
-- `context/`: authentication state and auth operations
-- `lib/`: shared API client and API base URL management
-- `utils/`: sanitization and API error helpers
+- route-level validation uses `express-validator`
+- validation happens before controller execution
+- schema validation remains at the Mongoose layer as a second boundary
 
-## Tradeoffs
+### Error handling
 
-### Why a modular monolith?
+- unmatched routes flow into `notFound` middleware
+- runtime errors flow into centralized error middleware
+- common cases such as duplicate keys, invalid IDs, and JWT failures are normalized into predictable API responses
 
-- simple to review
-- easy to run locally
-- enough structure to show backend maturity
-- avoids unnecessary complexity for an assignment-sized scope
+### Caching
 
-### Why in-memory MongoDB fallback?
+- task list responses are cached in-memory for short periods
+- task mutations clear relevant cache entries
+- this improves demo responsiveness without introducing external infrastructure
 
-- improves local demo reliability
-- avoids complete startup failure when MongoDB is unavailable
-- useful for reviewers who want a quick run
+## Frontend Role In The Architecture
 
-### Why session storage on frontend?
+The frontend is intentionally compact. Its responsibility is not to act as a design system showcase, but to prove the backend in realistic user flows:
 
-- easy to demonstrate JWT-protected flows
-- simpler than full cookie-based auth setup for assignment scope
+- auth state rehydration
+- token propagation to API requests
+- protected navigation
+- task CRUD interactions
+- admin-specific visibility on the dashboard
 
-For production, `httpOnly` cookies would generally be stronger.
+## Trade-Offs
 
-## Future-Friendly Structure
+### Why not split services?
 
-If this project were expanded further, the next clean evolutions would be:
+For this scope, splitting auth and task domains into separate deployables would increase complexity without improving clarity. The modular monolith keeps boundaries visible while staying easy to review and run locally.
 
-- introduce service layer modules for business logic
-- add test directories for backend and frontend
-- swap in Redis for shared caching
-- add refresh tokens and cookie-based auth
-- extract auth and task modules into independent services if scale justified it
+### Why not use refresh tokens and cookies?
+
+That would be a good next step for a production deployment, but it would add additional moving parts that are not necessary to demonstrate the core backend design goals here.
+
+### Why include an in-memory database fallback?
+
+Reviewer convenience. It reduces the odds of a full local startup failure when MongoDB is unavailable and keeps the project easier to evaluate.
+
+## Clean Next Evolutions
+
+If this project were extended, the most natural next steps would be:
+
+- add backend integration tests around auth and task flows
+- add frontend tests around auth and dashboard behavior
+- replace in-process cache with Redis for multi-instance deployments
+- introduce structured logging and request correlation IDs
+- move token handling toward `httpOnly` cookie-based auth
+- externalize deployment concerns into environment-specific manifests
 

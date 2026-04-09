@@ -1,138 +1,147 @@
-# Primetrade Assignment: Secure Task Management Platform
+# Primetrade Task Platform
 
-This project is a production-oriented full-stack assignment built around a secure REST API and a lightweight frontend for API consumption. The backend is the primary focus and emphasizes modular design, authentication, role-based authorization, validation, documentation, and operational resilience. The frontend exists to demonstrate real user flows against the API, including authentication, protected access, and CRUD interactions.
+[![CI](https://github.com/adarshkshitij/Assignment/actions/workflows/ci.yml/badge.svg)](https://github.com/adarshkshitij/Assignment/actions/workflows/ci.yml)
 
-## Overview
+Backend-first full-stack task management platform built to demonstrate production-minded API design, reviewer-friendly documentation, and a clean end-to-end implementation of authentication, authorization, validation, and task workflows.
 
-The application supports:
+This repository is strongest as a **full-stack project with a backend engineering emphasis**. The frontend is intentionally lightweight and supports the core reviewer journey: register, sign in, access protected routes, and exercise task CRUD and admin-only flows against the API.
 
-- user registration and login with password hashing
-- JWT-based authentication
+## What This Project Does
+
+Primetrade Task Platform solves a common operational problem: teams need a secure way to manage tasks with user-level ownership, admin visibility, clear validation, and predictable API behavior.
+
+The project demonstrates:
+
+- JWT-based authentication and protected routes
 - role-based access control for `user` and `admin`
-- CRUD operations for a secondary entity: `tasks`
-- filtering, sorting, and pagination for task listing
-- request validation and centralized error handling
+- task CRUD with ownership enforcement
+- filtering, sorting, pagination, and admin-facing task statistics
+- centralized request validation and error handling
 - Swagger and Postman API documentation
-- React frontend for register, login, protected dashboard access, and task CRUD
-- fallback in-memory MongoDB support for development and demo resilience
+- a small React frontend that exercises the backend through real flows
 
-## Architecture
+## Why This Repo Is Worth Reviewing
 
-The backend follows a modular Express + Mongoose structure:
+This project is structured to be easy to understand quickly:
 
-```text
-backend/
-  config/         database connection
-  controllers/    request handlers
-  middleware/     auth, validation, error, notFound
-  models/         Mongoose schemas
-  routes/         feature routes
-```
+- the backend follows a modular Express architecture
+- request flow is explicit and documented
+- validation and authorization are separated into reusable middleware
+- operational and reviewer docs are included
+- CI verifies backend syntax and frontend production build
+- local setup supports both MongoDB and a development-friendly in-memory fallback
 
-The frontend is organized for separation of concerns:
+## Stack
 
-```text
-frontend/
-  src/
-    context/      authentication state management
-    lib/          shared API client
-    pages/        route-level pages
-    utils/        sanitization and API error helpers
-```
+### Backend
 
-### System Flow
+- Node.js
+- Express
+- MongoDB + Mongoose
+- JWT authentication
+- `bcryptjs`
+- `express-validator`
+- Swagger (`swagger-jsdoc`, `swagger-ui-express`)
+- `node-cache`
+
+### Frontend
+
+- React
+- Vite
+- Axios
+- React Router
+
+### Tooling
+
+- GitHub Actions CI
+- Docker Compose for local MongoDB
+- Postman collection for API exploration
+
+## One-Look Architecture
 
 ```mermaid
 flowchart LR
-    U[User] --> F[React Frontend]
-    F --> A[Axios API Client]
-    A --> B[Express API /api/v1]
-    B --> M[Auth + Validation Middleware]
-    M --> C[Controllers]
-    C --> D[(MongoDB / In-Memory Fallback)]
-    B --> S[Swagger /api-docs]
+    User[User / Reviewer] --> UI[React Frontend]
+    UI --> Client[Axios API Client]
+    Client --> API[Express API /api/v1]
+    API --> MW[Auth + Validation Middleware]
+    MW --> Controllers[Controllers]
+    Controllers --> Models[Mongoose Models]
+    Models --> DB[(MongoDB)]
+    API --> Docs[Swagger /api-docs]
+    Controllers --> Cache[In-Memory Query Cache]
 ```
 
-### Request Lifecycle
+## Request Lifecycle
 
 ```mermaid
 sequenceDiagram
-    participant User
+    participant Browser
     participant Frontend
     participant API
     participant Middleware
     participant Controller
     participant DB
 
-    User->>Frontend: Register / Login / Task Action
-    Frontend->>API: HTTP request with payload
+    Browser->>Frontend: Register / login / task action
+    Frontend->>API: HTTP request
     API->>Middleware: auth + validation + role checks
-    Middleware->>Controller: sanitized request
-    Controller->>DB: query / create / update / delete
+    Middleware->>Controller: validated request
+    Controller->>DB: query or mutation
     DB-->>Controller: result
     Controller-->>Frontend: JSON response
-    Frontend-->>User: success / error feedback
+    Frontend-->>Browser: UI update + feedback
 ```
 
-## Key Features
+## Repository Map
 
-### Backend
+| Path | Responsibility |
+| --- | --- |
+| `backend/config` | environment-aware database connection |
+| `backend/controllers` | route handlers and business flow |
+| `backend/middleware` | auth, validation, error handling |
+| `backend/models` | Mongoose schemas and persistence rules |
+| `backend/routes` | versioned API surface |
+| `frontend/src/context` | auth state and auth operations |
+| `frontend/src/lib` | shared API client and token handling |
+| `frontend/src/pages` | route-level UI screens |
+| `.github/workflows` | CI verification |
+| `ARCHITECTURE.md` | system design and flow |
+| `REVIEWER_GUIDE.md` | fastest way to evaluate the repo |
+| `OPERATIONS.md` | runtime, health, and troubleshooting notes |
+| `DEPLOYMENT.md` | environment and deployment guidance |
+| `DESIGN_NOTES.md` | design choices and trade-offs |
 
-- Modular Express API with versioned routes under `/api/v1`
-- JWT authentication with `bcryptjs` password hashing
-- Role-based authorization for `user` and `admin`
-- Task CRUD with ownership checks
-- Filtering, sorting, pagination, and admin statistics
-- Centralized validation using `express-validator`
-- Centralized error handling and 404 route handling
-- Health check endpoint at `/api/v1/health`
-- Swagger docs at `/api-docs`
-- Postman collection included in the repository
+## Reviewer Quick Start
 
-### Frontend
+If you want the fastest high-signal evaluation path:
 
-- React + Vite single-page application
-- Register and login flows
-- Protected dashboard route
-- Task create, edit, delete, and list UI
-- Success and error messaging driven by API responses
-- Shared API client with centralized JWT attachment
-- Environment-based API URL configuration using `VITE_API_URL`
+1. Read this README for scope and structure.
+2. Open [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md).
+3. Review [ARCHITECTURE.md](./ARCHITECTURE.md) for the system flow.
+4. Inspect [backend/server.js](./backend/server.js) and [backend/controllers/taskController.js](./backend/controllers/taskController.js).
+5. Run the app locally and open Swagger at `http://localhost:5000/api-docs`.
 
-## Authentication and Authorization
+## Local Setup
 
-### Authentication
+### Prerequisites
 
-- Passwords are hashed before persistence using `bcryptjs`
-- JWT tokens are returned on successful login and registration
-- Protected routes require a valid bearer token
+- Node.js 18+ recommended
+- npm
+- MongoDB locally, MongoDB Atlas, or Docker Desktop
 
-### Authorization
+### 1. Clone the repository
 
-- `user` accounts can access and manage only their own tasks
-- `admin` accounts can inspect all tasks and use admin-only endpoints such as:
-  - `GET /api/v1/auth/admin-check`
-  - `GET /api/v1/tasks/stats`
+```bash
+git clone https://github.com/adarshkshitij/Assignment.git
+cd Assignment
+```
 
-## API Documentation
+### 2. Configure environment variables
 
-- Swagger UI: `http://localhost:5000/api-docs`
-- Postman collection: `backend/Primetrade-API.postman_collection.json`
-- Architecture notes: `ARCHITECTURE.md`
-- Reviewer quick path: `REVIEWER_GUIDE.md`
+Backend configuration lives in `backend/.env`.
 
-## Demo and Access Links
-
-- Local frontend: `http://127.0.0.1:5173`
-- Local Swagger docs: `http://localhost:5000/api-docs`
-- Local health check: `http://localhost:5000/api/v1/health`
-- Hosted demo: not deployed as part of this assignment repository
-
-## Environment Configuration
-
-### Backend
-
-Create `backend/.env` from `backend/.env.example`:
+You can start from [backend/.env.example](./backend/.env.example):
 
 ```env
 PORT=5000
@@ -142,23 +151,30 @@ JWT_SECRET=replace_with_a_long_random_secret
 ADMIN_SECRET_CODE=replace_with_admin_signup_code
 ```
 
-### Frontend
-
-Create `frontend/.env` from `frontend/.env.example` if you want to override the default API URL:
+Frontend overrides are optional. If needed, use [frontend/.env.example](./frontend/.env.example):
 
 ```env
 VITE_API_URL=http://localhost:5000/api/v1
 ```
 
-## Running the Project
+### 3. Start the database
 
-## 1. Install dependencies
+Option A: run MongoDB locally and point `MONGO_URI` to it.
+
+Option B: start MongoDB via Docker:
+
+```bash
+docker-compose up -d
+```
+
+### 4. Install dependencies and run the services
 
 Backend:
 
 ```bash
 cd backend
 npm install
+npm run dev
 ```
 
 Frontend:
@@ -166,143 +182,114 @@ Frontend:
 ```bash
 cd frontend
 npm install
+npm run dev
 ```
 
-## 2. Start the database
+### 5. Open the application
 
-### Option A: Local MongoDB
+- Frontend: `http://127.0.0.1:5173`
+- Swagger docs: `http://localhost:5000/api-docs`
+- Health endpoint: `http://localhost:5000/api/v1/health`
 
-Run MongoDB locally so that `MONGO_URI=mongodb://localhost:27017/primetrade_tasks` is reachable.
+## Demo Flows
 
-### Option B: Docker
+### User flow
 
-If Docker Desktop is installed, run from the project root:
+- register a standard `user`
+- sign in
+- create, edit, filter, and delete personal tasks
+- review status and priority metrics on the dashboard
 
-```bash
-docker-compose up -d
-```
+### Admin flow
 
-## 3. Start the backend
+- register as `admin`
+- provide the configured `ADMIN_SECRET_CODE`
+- access cross-user task visibility and task statistics
+
+## API Surface
+
+### Auth
+
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/auth/me`
+- `GET /api/v1/auth/admin-check`
+
+### Tasks
+
+- `GET /api/v1/tasks`
+- `POST /api/v1/tasks`
+- `GET /api/v1/tasks/:id`
+- `PUT /api/v1/tasks/:id`
+- `DELETE /api/v1/tasks/:id`
+- `GET /api/v1/tasks/stats`
+
+### System
+
+- `GET /api/v1/health`
+
+## Engineering Quality Signals
+
+- modular backend with explicit route/controller/middleware boundaries
+- reusable request validators via `express-validator`
+- centralized error handling and not-found middleware
+- role-based authorization and ownership checks
+- frontend API client with token injection and auth reset on `401`
+- Swagger and Postman documentation for API review
+- CI that runs backend verification and frontend production build
+- environment example files checked into the repo
+
+## Key Design Decisions
+
+- **Backend-first scope:** the assignment is evaluated primarily on backend depth, so the frontend is intentionally minimal but complete enough to prove the API works.
+- **Modular monolith:** this keeps the system simple to run while still showing scalable code organization.
+- **In-memory MongoDB fallback:** improves demo resilience when a reviewer does not have MongoDB running locally.
+- **Session storage for tokens:** acceptable for demo scope, with `httpOnly` cookies noted as a production improvement.
+
+For a deeper explanation, see [DESIGN_NOTES.md](./DESIGN_NOTES.md).
+
+## Verification
+
+Backend verification:
 
 ```bash
 cd backend
-npm run dev
+npm run check
 ```
 
-Expected successful startup:
-
-```text
-MongoDB Connected: localhost
-Server running in development mode on port 5000
-```
-
-If MongoDB is unavailable, the backend will fall back to an in-memory MongoDB instance:
-
-```text
-Failed to connect to primary MongoDB. Spinning up In-Memory DB...
-In-Memory MongoDB Connected: 127.0.0.1
-```
-
-This fallback is useful for local demos, but it is temporary and non-persistent.
-
-## 4. Start the frontend
+Frontend production build:
 
 ```bash
 cd frontend
-npm run dev
+npm run build
 ```
 
-The frontend typically runs at:
+CI runs both of the above on pushes and pull requests via [`.github/workflows/ci.yml`](./.github/workflows/ci.yml).
 
-`http://127.0.0.1:5173`
+## Additional Documentation
 
-## 5. Use the application
+- [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [REVIEWER_GUIDE.md](./REVIEWER_GUIDE.md)
+- [OPERATIONS.md](./OPERATIONS.md)
+- [DEPLOYMENT.md](./DEPLOYMENT.md)
+- [DESIGN_NOTES.md](./DESIGN_NOTES.md)
+- [SCALABILITY.md](./SCALABILITY.md)
 
-- App UI: `http://127.0.0.1:5173`
-- Swagger docs: `http://localhost:5000/api-docs`
-- Health check: `http://localhost:5000/api/v1/health`
+## Future Improvements
 
-## Reviewer Flow
-
-If you are reviewing the project for the first time, the fastest path is:
-
-1. Read this README for scope and tradeoffs
-2. Open Swagger docs to inspect the API surface
-3. Run the frontend and verify auth + task flows
-4. Read `ARCHITECTURE.md` for system design details
-5. Use `REVIEWER_GUIDE.md` for a focused evaluation path
-
-## Admin Signup
-
-To create an admin account:
-
-- choose `Admin` during registration
-- provide the same value configured in `ADMIN_SECRET_CODE`
-
-If the code does not match, admin registration is rejected.
-
-## Security Considerations
-
-- Password hashing with `bcryptjs`
-- JWT-protected routes for authenticated access
-- Role-based route protection and resource ownership checks
-- Request validation using `express-validator`
-- Centralized API error responses
-- Helmet-based security headers
-- Session storage token handling on the frontend for a simpler demo flow
-
-Note:
-For a production deployment, `httpOnly` secure cookies would generally be preferable to browser-managed storage for token handling.
-
-## Validation and Error Handling Strategy
-
-- request validation runs before controller execution through reusable validator middleware
-- model-level validation still exists at the schema layer as a second line of defense
-- controller logic focuses on domain actions and authorization checks
-- centralized error middleware converts runtime failures into consistent JSON responses
-- unmatched routes are handled by a dedicated `notFound` middleware
-
-## Scalability Considerations
-
-The codebase was designed with incremental scalability in mind:
-
-- versioned API routes
-- modular route/controller/middleware separation
-- reusable validation middleware
-- environment-based configuration
-- API documentation for easier onboarding
-- caching support already included for task queries
-- Docker-based database setup support
-
-See [SCALABILITY.md](./SCALABILITY.md) for a short note on future scaling directions such as microservices, distributed caching, and load balancing.
-See `ARCHITECTURE.md` for implementation-level structure and request flow.
-
-## Tradeoffs and Practical Decisions
-
-- MongoDB in-memory fallback was included to improve local reliability and demo readiness
-- The frontend intentionally remains simple because the assignment prioritizes backend design
-- The code aims for clarity and maintainability over unnecessary abstraction
-
-## Suggested Future Improvements
-
-- refresh token flow with rotation
+- automated backend integration tests
+- frontend component and interaction tests
+- refresh-token flow with rotation
 - `httpOnly` cookie-based auth
-- automated backend and frontend tests
-- Redis-backed distributed caching
-- request correlation IDs and structured logs
-- CI/CD pipeline and deployment configuration
-- persistent production database and secrets management
+- structured logging and correlation IDs
+- Redis-backed cache for multi-instance deployments
+- production deployment manifests and secrets management
 
-## Deliverables Mapping
+## Repository Positioning
 
-- Backend project hosted in GitHub with README setup: complete
-- Working APIs for authentication and CRUD: complete
-- Basic frontend UI that connects to APIs: complete
-- API documentation (Swagger/Postman collection): complete
-- Short scalability note: complete
+This is a **backend-first full-stack engineering project** that is strongest when presented as:
 
-## Supporting Documents
+- secure task management platform
+- production-style Express API with reviewer-friendly documentation
+- practical demonstration of auth, RBAC, validation, CRUD, and API ergonomics
 
-- `ARCHITECTURE.md`
-- `REVIEWER_GUIDE.md`
-- `SCALABILITY.md`

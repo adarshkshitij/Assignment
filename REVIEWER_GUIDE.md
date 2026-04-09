@@ -1,77 +1,97 @@
 # Reviewer Guide
 
-This guide is intended to help a reviewer or interviewer evaluate the project quickly without having to inspect every file manually.
+This guide is designed for recruiters, interviewers, hiring managers, and developers who want a fast, high-signal walkthrough of the repository without reading every file.
 
-## What This Project Demonstrates
+## Project Classification
 
-- secure user registration and login
-- JWT-based authentication
+Best fit: **backend-first full-stack project**
+
+Why:
+
+- the backend contains the primary engineering depth
+- the frontend exists to validate real user and admin flows
+- the repository demonstrates API design, auth, RBAC, validation, and operational documentation in one place
+
+## What To Evaluate First
+
+If you only have 5 to 10 minutes, use this path:
+
+1. Read [README.md](./README.md) for the overall scope and quality signals.
+2. Open [ARCHITECTURE.md](./ARCHITECTURE.md) for a quick system understanding.
+3. Inspect [backend/server.js](./backend/server.js) to see application bootstrap and middleware composition.
+4. Inspect [backend/controllers/authController.js](./backend/controllers/authController.js) and [backend/controllers/taskController.js](./backend/controllers/taskController.js).
+5. Inspect [backend/middleware/auth.js](./backend/middleware/auth.js) and [backend/middleware/validators.js](./backend/middleware/validators.js).
+6. Inspect [frontend/src/context/AuthContext.jsx](./frontend/src/context/AuthContext.jsx) and [frontend/src/pages/Dashboard.jsx](./frontend/src/pages/Dashboard.jsx).
+7. Run the project and review Swagger at `http://localhost:5000/api-docs`.
+
+## What This Repository Demonstrates
+
+- modular Express backend organization
+- JWT authentication with password hashing
 - role-based access control
-- task CRUD with ownership checks
-- filtering, sorting, and pagination
-- validation and centralized error handling
-- Swagger and Postman documentation
-- frontend integration with protected routes
-
-## Fastest Review Path
-
-If you only have 5 to 10 minutes, use this order:
-
-1. Read [README.md](./README.md)
-2. Open Swagger at `http://localhost:5000/api-docs`
-3. Inspect backend entry point in [server.js](./backend/server.js)
-4. Review auth flow in [authController.js](./backend/controllers/authController.js)
-5. Review authorization and validation in:
-   - [auth.js](./backend/middleware/auth.js)
-   - [validators.js](./backend/middleware/validators.js)
-6. Review task workflows in [taskController.js](./backend/controllers/taskController.js)
-7. Review frontend integration in:
-   - [AuthContext.jsx](./frontend/src/context/AuthContext.jsx)
-   - [Dashboard.jsx](./frontend/src/pages/Dashboard.jsx)
-
-## What To Look For
-
-### Backend signals
-
-- API versioning under `/api/v1`
-- reusable middleware
+- task ownership enforcement
 - validation before controller execution
 - centralized error handling
-- clear user/admin separation
-- ownership checks on tasks
-- API docs and reviewer-friendly setup
+- API documentation via Swagger and Postman
+- frontend integration with protected flows
+- CI verification for backend and frontend
 
-### Frontend signals
+## Suggested Review Lens
 
-- protected route handling
+### Backend quality signals
+
+- route/controller/middleware separation
+- request validation and model validation
+- ownership and authorization checks
+- explicit admin-only capability boundaries
+- health endpoint and predictable startup behavior
+
+### Frontend quality signals
+
+- shared API client with token injection
 - auth state rehydration
-- shared API client
-- clear API success and error UX
-- minimal but purposeful structure
+- meaningful task dashboard interactions
+- user-facing handling of API success and error cases
 
-## Suggested Demo Flow
+### Documentation quality signals
+
+- quick repository comprehension
+- architecture and operations notes
+- reviewer-oriented entry points
+- realistic trade-offs instead of overclaiming
+
+## Suggested Demo Journey
 
 ```mermaid
 flowchart LR
-    Start[Start Project] --> Register[Register User]
-    Register --> Login[Login]
+    Start[Start Project] --> Register[Register Standard User]
+    Register --> Login[Log In]
     Login --> Dashboard[Open Dashboard]
     Dashboard --> Create[Create Task]
-    Create --> Update[Update Task]
+    Create --> Filter[Filter and Sort Tasks]
+    Filter --> Update[Update Task]
     Update --> Delete[Delete Task]
-    Login --> Admin[Register/Login as Admin]
-    Admin --> Stats[Open Admin Stats Flow]
+    Login --> Admin[Register or Log In as Admin]
+    Admin --> Stats[View Task Stats]
 ```
 
-## Reviewer Notes
+## Files Worth Opening
 
-- If local MongoDB is unavailable, the backend falls back to an in-memory MongoDB instance for demo continuity.
-- The frontend is intentionally simple because the assignment prioritizes backend depth.
-- The codebase avoids overengineering but still shows modular, production-minded patterns.
+| File | Why it matters |
+| --- | --- |
+| [backend/server.js](./backend/server.js) | service bootstrap and middleware wiring |
+| [backend/config/db.js](./backend/config/db.js) | persistence strategy and in-memory fallback |
+| [backend/controllers/authController.js](./backend/controllers/authController.js) | auth flow and token issuance |
+| [backend/controllers/taskController.js](./backend/controllers/taskController.js) | CRUD, filtering, pagination, cache invalidation |
+| [backend/middleware/auth.js](./backend/middleware/auth.js) | auth and RBAC enforcement |
+| [backend/middleware/validators.js](./backend/middleware/validators.js) | input validation boundary |
+| [frontend/src/context/AuthContext.jsx](./frontend/src/context/AuthContext.jsx) | frontend auth orchestration |
+| [frontend/src/lib/api.js](./frontend/src/lib/api.js) | API client configuration and token handling |
+| [frontend/src/pages/Dashboard.jsx](./frontend/src/pages/Dashboard.jsx) | core user-visible flow |
 
 ## Verification Commands
 
-Backend syntax check:
+Backend verification:
 
 ```bash
 cd backend
@@ -85,9 +105,10 @@ cd frontend
 npm run build
 ```
 
-## Artifacts
+## Additional Supporting Docs
 
-- Swagger docs: `http://localhost:5000/api-docs`
-- Postman collection: `backend/Primetrade-API.postman_collection.json`
-- Scalability note: [SCALABILITY.md](./SCALABILITY.md)
-- Architecture notes: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- [OPERATIONS.md](./OPERATIONS.md)
+- [DEPLOYMENT.md](./DEPLOYMENT.md)
+- [DESIGN_NOTES.md](./DESIGN_NOTES.md)
+- [SCALABILITY.md](./SCALABILITY.md)
+
